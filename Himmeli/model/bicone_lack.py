@@ -1,12 +1,31 @@
-from ..utils import plot_side_3d, plot_surface_3d
+from ..utils import plot_side_3d, plot_surface_3d, plot_isosceles, plot_trapezoid, plot_circle, plot_polygon
 import numpy as np
+from ..himmeli import Himmeli
+from pathlib import Path
 
 
-class Bicone_Lack(object):
-    def __init__(self, a, b1, b2, n):
-        self.a = a
+class Bicone_Lack(Himmeli):
+    def __init__(self, a1, a2, b1, b2, n, folder=Path(".")):
+        super().__init__(folder=folder)
+
+        self.a1 = a1
+        self.a2 = a2
         self.b1 = b1
         self.b2 = b2
+        if a2 is None and b2 is None:
+            print(f"`a2` or `b2` must be not `None`")
+            raise ValueError()
+        if a2 is None:
+            self.a2 = self.a1 * (self.b1 - self.b2) / self.b1
+        elif b2 is None:
+            self.b2 = self.b1 * (self.a1 - self.a2) / self.a1
+
+        if self.a1 <= self.a2:
+            print(f"`a1` must large than `a2`")
+            print(f"`a1`={self.a1}")
+            print(f"`a2`={self.a2}")
+            raise ValueError()
+
         if self.b1 <= self.b2:
             print(f"`b1` must large than `b2`")
             print(f"`b1`={self.b1}")
@@ -16,16 +35,35 @@ class Bicone_Lack(object):
         self.n = n
         self.dtheta = 2 * np.pi / self.n
         self.r1 = self.b1 / (2 * np.sin(self.dtheta / 2))
-        self.r2 = self.r1 * (self.b1 - self.b2) / self.b1
+        self.r2 = self.b2 / (2 * np.sin(self.dtheta / 2))
 
-        if self.a <= self.r1:
-            print(f"`a` must large than `r1`")
-            print(f"`a`={self.a}")
-            print(f"`r1`={self.r1}")
+        if self.a1 <= self.r1:
+            print(f"`a1` must large than {self.r1}")
+            print(f"`a1`={self.a1}")
+            print(f"In other wards,")
+            b1_u = self.a1 * (2 * np.sin(self.dtheta / 2))
+            print(f"`b1` must small than {b1_u}")
+            print(f"`b1`={self.b1}")
             raise ValueError()
 
-        self.h1 = np.sqrt(self.a**2 - self.r1**2)
-        self.h2 = self.h1 * self.b2 / self.b1
+        if self.a2 <= self.r1 - self.r2:
+            print(f"`a2` must large than {self.r1-self.r2}")
+            print(f"`a2`={self.a2}")
+            print(f"In other wards,")
+            b2_u = (self.r1 - self.a2) * (2 * np.sin(self.dtheta / 2))
+            print(f"`b2` must large than {b2_u}")
+            print(f"`b2`={self.b2}")
+            raise ValueError()
+
+        self.h1 = np.sqrt(self.a1**2 - self.r1**2)
+        self.h2 = np.sqrt(self.a2**2 - (self.r1 - self.r2)**2)
+
+    def __str__(self) -> str:
+        return f"Bicone_Lack: {self.a1:g}, {self.a2:g}, {self.b1:g}, {self.b2:g}, {self.n}"
+
+    @property
+    def name(self):
+        return f"Bicone_Lack-{self.a1:g}-{self.a2:g}-{self.b1:g}-{self.b2:g}-{self.n}"
 
     def plot(self, ax):
         self.plot_side(ax)
@@ -69,55 +107,25 @@ class Bicone_Lack(object):
             plot_surface_3d(ax, *x0, *x1, *x2, *x3)
 
     def plot_expansion(self, ax):
+        w = self.b1
+        h = np.sqrt(self.a1**2 - (self.b1 / 2)**2)
         for i in range(self.n):
             x0 = self.b1 * i
-            x1 = self.b1 * (i + 1)
-            x2 = self.b1 * (i + 0.5)
-            y0 = 0
-            y1 = 0
-            y2 = np.sqrt(self.a**2 - (self.b1 / 2)**2)
+            plot_isosceles(ax, x0, 0, w, h)
 
-            ax.plot([x0, x1, x2, x0], [y0, y1, y2, y0], c="C0")
+        plot_circle(ax, 0, 0, self.r1, np.pi / 2 + self.dtheta / 2)
+        plot_polygon(ax, 0, 0, self.r1, self.n, np.pi / 2 + self.dtheta / 2)
 
+        w1 = self.b1
+        w2 = self.b2
+        h = -np.sqrt(self.a2**2 - ((self.b1 - self.b2) / 2)**2)
         for i in range(self.n):
             x0 = self.b1 * i
-            x1 = self.b1 * (i + 1)
-            x2 = self.b1 * (i + 1 - 0.5 * self.b2 / self.b1)
-            x3 = self.b1 * (i + 0.5 * self.b2 / self.b1)
-            y0 = 0
-            y1 = 0
-            y2 = -np.sqrt(self.a**2 - (self.b1 / 2)**2) * self.b2 / self.b1
-            y3 = -np.sqrt(self.a**2 - (self.b1 / 2)**2) * self.b2 / self.b1
+            plot_trapezoid(ax, x0, 0, w1, w2, h)
 
-            ax.plot([x0, x1, x2, x3, x0], [y0, y1, y2, y3, y0], c="C0")
-
-        theta = np.linspace(0, 2 * np.pi, self.n + 1, endpoint=True)
-        x = self.b1 / 2 + self.r1 * -np.sin(theta + self.dtheta / 2)
-        y = -self.r1 * np.cos(self.dtheta / 2) + self.r1 * \
-            np.cos(theta + self.dtheta / 2)
-
-        ax.plot(x, y, c="C0", linestyle="dashed")
-
-        theta = np.linspace(0, 2 * np.pi, 100, endpoint=True)
-        x = self.b1 / 2 + self.r1 * -np.sin(theta + self.dtheta / 2)
-        y = -self.r1 * np.cos(self.dtheta / 2) + self.r1 * \
-            np.cos(theta + self.dtheta / 2)
-
-        ax.plot(x, y, c="C0", linestyle="dashed")
-
-        theta = np.linspace(0, 2 * np.pi, self.n + 1, endpoint=True)
-        x = self.b1 / 2 + self.r2 * -np.sin(theta + self.dtheta / 2)
-        y = -np.sqrt(self.a**2 - (self.b1 / 2)**2) * self.b2 / self.b1 - self.r2 * \
-            np.cos(self.dtheta / 2) + self.r2 * np.cos(theta + self.dtheta / 2)
-
-        ax.plot(x, y, c="C0", linestyle="dashed")
-
-        theta = np.linspace(0, 2 * np.pi, 100, endpoint=True)
-        x = self.b1 / 2 + self.r2 * -np.sin(theta + self.dtheta / 2)
-        y = -np.sqrt(self.a**2 - (self.b1 / 2)**2) * self.b2 / self.b1 - self.r2 * \
-            np.cos(self.dtheta / 2) + self.r2 * np.cos(theta + self.dtheta / 2)
-
-        ax.plot(x, y, c="C0", linestyle="dashed")
+        x0 = (w1 - w2) / 2
+        plot_circle(ax, x0, h, self.r2, np.pi / 2 + self.dtheta / 2)
+        plot_polygon(ax, x0, h, self.r2, self.n, np.pi / 2 + self.dtheta / 2)
 
         ax.set_aspect("equal")
 

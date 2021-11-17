@@ -4,19 +4,17 @@ Plot Himmeli in 3D &amp; 2D to create  mobiles.
 ## Usage
 
 ```
-import matplotlib.pyplot as plt
-from Himmeli import Cone, Bicone, Bicone_Lack
+him = Cone(60, 80, 3, folder=Path("Himmeli"))
 
-him = Cone(4, 4, 3)
-
-ax = plt.figure().add_subplot(projection='3d')
+fig, ax = plt.subplots(subplot_kw=dict(projection="3d"))
 him.plot(ax)
-plt.savefig("Cone-3D.png")
+if save:
+    plt.savefig(him.file_3d)
 plt.show()
 
-ax = plt.figure().add_subplot()
-him.plot_expansion(ax)
-plt.savefig("Cone-2D.png")
+fig, ax = him.plot_paper()
+if save:
+    plt.savefig(him.file_2d)
 plt.show()
 ```
 
@@ -24,16 +22,17 @@ plt.show()
 ![Cone-2D](demo/Cone-2D.png)
 
 ```
-him = Bicone(4, 3, 4)
+him = Bicone(45, 30, 35, 5, folder=Path("Himmeli"))
 
-ax = plt.figure().add_subplot(projection='3d')
+fig, ax = plt.subplots(subplot_kw=dict(projection="3d"))
 him.plot(ax)
-plt.savefig("Bicone-3D.png")
+if save:
+    plt.savefig(him.file_3d)
 plt.show()
 
-ax = plt.figure().add_subplot()
-him.plot_expansion(ax)
-plt.savefig("Bicone-2D.png")
+fig, ax = him.plot_paper()
+if save:
+    plt.savefig(him.file_2d)
 plt.show()
 ```
 
@@ -41,16 +40,17 @@ plt.show()
 ![Bicone-2D](demo/Bicone-2D.png)
 
 ```
-him = Bicone_Lack(4, 2, 1, 5)
+him = Bicone_Lack(60, 30, 60, 20, 4, folder=Path("Himmeli"))
 
-ax = plt.figure().add_subplot(projection='3d')
+fig, ax = plt.subplots(subplot_kw=dict(projection="3d"))
 him.plot(ax)
-plt.savefig("Bicone_Lack-3D.png")
+if save:
+    plt.savefig(him.file_3d)
 plt.show()
 
-ax = plt.figure().add_subplot()
-him.plot_expansion(ax)
-plt.savefig("Bicone_Lack-2D.png")
+fig, ax = him.plot_paper()
+if save:
+    plt.savefig(him.file_2d)
 plt.show()
 ```
 

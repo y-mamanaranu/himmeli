@@ -1,9 +1,13 @@
-from ..utils import plot_side_3d, plot_surface_3d
+from ..utils import plot_side_3d, plot_surface_3d, plot_isosceles, plot_circle, plot_polygon
 import numpy as np
+from ..himmeli import Himmeli
+from pathlib import Path
 
 
-class Cone(object):
-    def __init__(self, a, b, n):
+class Cone(Himmeli):
+    def __init__(self, a, b, n, folder=Path(".")):
+        super().__init__(folder=folder)
+
         self.a = a
         self.b = b
         self.n = n
@@ -11,12 +15,22 @@ class Cone(object):
         self.r = self.b / (2 * np.sin(self.dtheta / 2))
 
         if self.a <= self.r:
-            print(f"`a` must large than `r`")
+            print(f"`a` must large than {self.r}")
             print(f"`a`={self.a}")
-            print(f"`r`={self.r}")
+            print(f"In other wards,")
+            b_u = self.a * (2 * np.sin(self.dtheta / 2))
+            print(f"`b` must small than {b_u}")
+            print(f"`b`={self.b}")
             raise ValueError()
 
         self.h = np.sqrt(self.a**2 - self.r**2)
+
+    def __str__(self) -> str:
+        return f"Cone: {self.a}, {self.b}, {self.n}"
+
+    @property
+    def name(self):
+        return f"Cone-{self.a}-{self.b}-{self.n}"
 
     def plot(self, ax):
         self.plot_side(ax)
@@ -50,28 +64,14 @@ class Cone(object):
             plot_surface_3d(ax, *x0, *x1, *x2, *x2)
 
     def plot_expansion(self, ax):
+        w = self.b
+        h = np.sqrt(self.a**2 - (self.b / 2)**2)
         for i in range(self.n):
             x0 = self.b * i
-            x1 = self.b * (i + 1)
-            x2 = self.b * (i + 0.5)
-            y0 = 0
-            y1 = 0
-            y2 = np.sqrt(self.a**2 - (self.b / 2)**2)
+            plot_isosceles(ax, x0, 0, w, h)
 
-            ax.plot([x0, x1, x2, x0], [y0, y1, y2, y0], c="C0")
-
-        theta = np.linspace(0, 2 * np.pi, self.n + 1, endpoint=True)
-        x = self.b / 2 + self.r * -np.sin(theta + self.dtheta / 2)
-        y = -self.r * np.cos(self.dtheta / 2) + self.r * \
-            np.cos(theta + self.dtheta / 2)
-        ax.plot(x, y, c="C0", linestyle="dashed")
-
-        theta = np.linspace(0, 2 * np.pi, 100, endpoint=True)
-        x = self.b / 2 + self.r * -np.sin(theta + self.dtheta / 2)
-        y = -self.r * np.cos(self.dtheta / 2) + self.r * \
-            np.cos(theta + self.dtheta / 2)
-
-        ax.plot(x, y, c="C0", linestyle="dashed")
+        plot_circle(ax, 0, 0, self.r, np.pi / 2 + self.dtheta / 2)
+        plot_polygon(ax, 0, 0, self.r, self.n, np.pi / 2 + self.dtheta / 2)
 
         ax.set_aspect("equal")
 
