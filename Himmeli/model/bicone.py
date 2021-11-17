@@ -1,7 +1,14 @@
-from ..utils import plot_side_3d, plot_surface_3d, plot_isosceles, plot_circle, plot_polygon
 import numpy as np
-from ..himmeli import Himmeli
 from pathlib import Path
+
+from ..himmeli import Himmeli
+from ..utils import (
+    plot_circle,
+    plot_isosceles,
+    plot_polygon,
+    plot_side_3d,
+    plot_surface_3d,
+)
 
 
 class Bicone(Himmeli):
@@ -13,6 +20,8 @@ class Bicone(Himmeli):
         if a2 is None:
             self.a2 = self.a1
         self.b = b
+        if b is None:
+            self.b = self.a1
         self.n = n
         self.dtheta = 2 * np.pi / self.n
         self.r = self.b / (2 * np.sin(self.dtheta / 2))
@@ -39,7 +48,7 @@ class Bicone(Himmeli):
         self.h2 = np.sqrt(self.a2**2 - self.r**2)
 
     def __str__(self) -> str:
-        return f"Cone: {self.a1}, {self.a2}, {self.b}, {self.n}"
+        return f"Bicone: {self.a1}, {self.a2}, {self.b}, {self.n}"
 
     @property
     def name(self):

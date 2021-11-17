@@ -1,7 +1,15 @@
-from ..utils import plot_side_3d, plot_surface_3d, plot_isosceles, plot_trapezoid, plot_circle, plot_polygon
 import numpy as np
-from ..himmeli import Himmeli
 from pathlib import Path
+
+from ..himmeli import Himmeli
+from ..utils import (
+    plot_circle,
+    plot_isosceles,
+    plot_polygon,
+    plot_side_3d,
+    plot_surface_3d,
+    plot_trapezoid,
+)
 
 
 class Bicone_Lack(Himmeli):
@@ -12,6 +20,8 @@ class Bicone_Lack(Himmeli):
         self.a2 = a2
         self.b1 = b1
         self.b2 = b2
+        if b1 is None:
+            self.b1 = self.a1
         if a2 is None and b2 is None:
             print(f"`a2` or `b2` must be not `None`")
             raise ValueError()

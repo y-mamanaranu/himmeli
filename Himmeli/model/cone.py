@@ -1,7 +1,14 @@
-from ..utils import plot_side_3d, plot_surface_3d, plot_isosceles, plot_circle, plot_polygon
 import numpy as np
-from ..himmeli import Himmeli
 from pathlib import Path
+
+from ..himmeli import Himmeli
+from ..utils import (
+    plot_circle,
+    plot_isosceles,
+    plot_polygon,
+    plot_side_3d,
+    plot_surface_3d,
+)
 
 
 class Cone(Himmeli):
@@ -10,6 +17,8 @@ class Cone(Himmeli):
 
         self.a = a
         self.b = b
+        if b is None:
+            self.b = self.a
         self.n = n
         self.dtheta = 2 * np.pi / self.n
         self.r = self.b / (2 * np.sin(self.dtheta / 2))

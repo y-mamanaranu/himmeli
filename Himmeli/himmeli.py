@@ -4,11 +4,16 @@ import warnings
 import matplotlib.pyplot as plt
 from pathlib import Path
 
+a3_landscape = [420, 297] * u.mm
+a3_portrait = [297, 420] * u.mm
+
 a4_landscape = [297, 210] * u.mm
 a4_portrait = [210, 297] * u.mm
 
 
 class Himmeli(object):
+    papersize = a4_landscape
+
     def __init__(self, folder=Path(".")):
         self.folder = folder
 
@@ -28,9 +33,11 @@ class Himmeli(object):
         warnings.warn("`plot_expansion` is not defined.")
 
     def plot_paper(
-        self, papersize=a4_landscape, horizontalmargin=0.02, verticalmargin=0.02
+        self, papersize=None, horizontalmargin=0.02, verticalmargin=0.02
     ):
-        figsize = w0, h0 = papersize.to(imperial.inch).value
+        if papersize is None:
+            papersize = self.papersize
+        figsize = papersize.to(imperial.inch).value
         fig, ax = plt.subplots(figsize=figsize)
 
         self.plot_expansion(ax)
@@ -41,8 +48,9 @@ class Himmeli(object):
         dx = x1 - x0
         dy = y1 - y0
 
-        w = 297 * (1 - 2 * horizontalmargin)
-        h = 210 * (1 - 2 * verticalmargin)
+        w0, h0 = papersize.to(u.mm).value
+        w = w0 * (1 - 2 * horizontalmargin)
+        h = h0 * (1 - 2 * verticalmargin)
 
         xblank = (w - dx) / 2
         yblank = (h - dy) / 2
