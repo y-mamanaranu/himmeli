@@ -8,6 +8,7 @@ from ..utils import (
     plot_polygon,
     plot_side_3d,
     plot_surface_3d,
+    plot_shape,
 )
 
 
@@ -103,8 +104,13 @@ class Bicone(Himmeli):
 
         h = np.sqrt(self.a2**2 - (self.b / 2)**2)
         for i in range(self.n):
-            x0 = self.b * i
-            plot_isosceles(ax, x0, 0, w, -h)
+            x0 = self.b * (i + 1)
+            plot_isosceles(ax, x0, 0, -w, -h)
+
+        xy0 = w + self.r, self.h1
+        xy1 = w, 0
+        xy2 = w + self.r, -self.h2
+        plot_shape(ax, xy0, xy1, xy2, linestyle=":")
 
         ax.set_aspect("equal")
 

@@ -17,13 +17,19 @@ def plot_surface_3d(ax, x0, y0, z0, x1, y1, z1, x2, y2, z2, x3, y3, z3):
     ax.plot_surface(x, y, z, alpha=0.2, color="C0")
 
 
+def plot_shape(ax, *xy, linestyle=None):
+    x, y = zip(*xy)
+    ax.plot(x, y, c="C0", linestyle=linestyle)
+
+
 def plot_isosceles(ax, x0, y0, w, h):
     x1 = x0 + w
     x2 = x0 + w / 2
     y1 = y0
     y2 = y0 + h
 
-    ax.plot([x0, x1, x2, x0], [y0, y1, y2, y0], c="C0")
+    ax.plot([x0, x1, x2], [y0, y1, y2], c="C0")
+    ax.plot([x2, x0], [y2, y0], c="C0", linestyle=":")
 
 
 def plot_trapezoid(ax, x0, y0, w1, w2, h):
@@ -34,7 +40,8 @@ def plot_trapezoid(ax, x0, y0, w1, w2, h):
     y2 = y0 + h
     y3 = y0 + h
 
-    ax.plot([x0, x1, x2, x3, x0], [y0, y1, y2, y3, y0], c="C0")
+    ax.plot([x0, x1, x2, x3], [y0, y1, y2, y3], c="C0")
+    ax.plot([x3, x0], [y3, y0], c="C0", linestyle=":")
 
 
 def plot_circle(ax, x0, y0, r, theta0=0):

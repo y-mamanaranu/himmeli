@@ -9,6 +9,7 @@ from ..utils import (
     plot_side_3d,
     plot_surface_3d,
     plot_trapezoid,
+    plot_shape,
 )
 
 
@@ -130,12 +131,18 @@ class Bicone_Lack(Himmeli):
         w2 = self.b2
         h = -np.sqrt(self.a2**2 - ((self.b1 - self.b2) / 2)**2)
         for i in range(self.n):
-            x0 = self.b1 * i
-            plot_trapezoid(ax, x0, 0, w1, w2, h)
+            x0 = self.b1 * (i + 1)
+            plot_trapezoid(ax, x0, 0, -w1, -w2, h)
 
         x0 = (w1 - w2) / 2
         plot_circle(ax, x0, h, self.r2, np.pi / 2 + self.dtheta / 2)
         plot_polygon(ax, x0, h, self.r2, self.n, np.pi / 2 + self.dtheta / 2)
+
+        xy0 = w + self.r1, self.h1
+        xy1 = w, 0
+        xy2 = w + self.r1 - self.r2, -self.h2
+        xy3 = w + self.r1, -self.h2
+        plot_shape(ax, xy0, xy1, xy2, xy3, linestyle=":")
 
         ax.set_aspect("equal")
 
