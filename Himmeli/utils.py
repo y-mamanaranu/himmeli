@@ -18,8 +18,8 @@ def plot_surface_3d(ax, x0, y0, z0, x1, y1, z1, x2, y2, z2, x3, y3, z3):
 
 
 def plot_side(ax, x0, y0, x1, y1, xoff=None, yoff=None, linestyle=None):
-    x = np.array([x0, x1])
-    y = np.array([y0, y1])
+    x = np.array([x0+xoff, x1+xoff])
+    y = np.array([y0+yoff, y1+yoff])
 
     ax.plot(x, y, c="C0", linestyle=linestyle)
 
