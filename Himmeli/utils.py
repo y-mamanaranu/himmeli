@@ -17,16 +17,28 @@ def plot_surface_3d(ax, x0, y0, z0, x1, y1, z1, x2, y2, z2, x3, y3, z3):
     ax.plot_surface(x, y, z, alpha=0.2, color="C0")
 
 
+def plot_side(ax, x0, y0, x1, y1, xoff=None, yoff=None, linestyle=None):
+    x = np.array([x0, x1])
+    y = np.array([y0, y1])
+
+    ax.plot(x, y, c="C0", linestyle=linestyle)
+
+
 def plot_shape(ax, *xy, linestyle=None):
     x, y = zip(*xy)
     ax.plot(x, y, c="C0", linestyle=linestyle)
 
 
-def plot_isosceles(ax, x0, y0, w, h):
+def plot_isosceles(ax, x0, y0, w, h, transpose=False):
     x1 = x0 + w
     x2 = x0 + w / 2
     y1 = y0
     y2 = y0 + h
+    if transpose:
+        x1 = x0
+        x2 = x0 - h
+        y1 = y0 + w
+        y2 = y0 + w / 2
 
     ax.plot([x0, x1, x2], [y0, y1, y2], c="C0")
     ax.plot([x2, x0], [y2, y0], c="C0", linestyle=":")

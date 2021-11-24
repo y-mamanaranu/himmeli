@@ -41,7 +41,7 @@ class Icosahedron(Himmeli):
             print(f"`a1`={self.a1}")
             print(f"In other wards,")
             b1_u = self.a1 * (2 * np.sin(self.dtheta / 2))
-            print(f"`b1` must small than {b_u}")
+            print(f"`b1` must small than {b1_u}")
             print(f"`b1`={self.b1}")
             raise ValueError()
 
