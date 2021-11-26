@@ -3,6 +3,10 @@ from astropy.units import imperial
 import warnings
 import matplotlib.pyplot as plt
 from pathlib import Path
+import numpy as np
+
+a2_landscape = [594, 420] * u.mm
+a2_portrait = [420, 594] * u.mm
 
 a3_landscape = [420, 297] * u.mm
 a3_portrait = [297, 420] * u.mm
@@ -14,8 +18,21 @@ a4_portrait = [210, 297] * u.mm
 class Himmeli(object):
     papersize = a4_landscape
 
-    def __init__(self, folder=Path(".")):
+    def __init__(self, n, folder=Path(".")):
+        self.n = n
         self.folder = folder
+
+    @property
+    def dtheta(self):
+        return 2 * np.pi / self.n
+
+    @property
+    def theta(self):
+        return np.linspace(0, 2 * np.pi, self.n, endpoint=False)
+
+    @property
+    def circle(self):
+        return np.linspace(0, 2 * np.pi, 100, endpoint=True)
 
     @property
     def name(self):

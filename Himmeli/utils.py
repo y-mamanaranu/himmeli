@@ -1,6 +1,14 @@
 import numpy as np
 
 
+def radius(theta, offset=0, z=0):
+    if hasattr(theta, "__iter__"):
+        return np.array([[np.cos(t + offset), np.sin(t + offset), z]
+                        for t in theta])
+    else:
+        return np.array([np.cos(theta + offset), np.sin(theta + offset), z])
+
+
 def plot_side_3d(ax, x0, y0, z0, x1, y1, z1):
     x = np.array([x0, x1])
     y = np.array([y0, y1])
@@ -17,9 +25,15 @@ def plot_surface_3d(ax, x0, y0, z0, x1, y1, z1, x2, y2, z2, x3, y3, z3):
     ax.plot_surface(x, y, z, alpha=0.2, color="C0")
 
 
-def plot_side(ax, x0, y0, x1, y1, xoff=None, yoff=None, linestyle=None):
-    x = np.array([x0+xoff, x1+xoff])
-    y = np.array([y0+yoff, y1+yoff])
+def plot_side(ax, x0, y0, x1, y1, xoff=None,
+              yoff=None, c=1, linestyle=None):
+    if hasattr(c, "__iter__"):
+        cx, cy = c
+    else:
+        cx = cy = c
+
+    x = np.array([cx * x0 + xoff, cx * x1 + xoff])
+    y = np.array([cy * y0 + yoff, cy * y1 + yoff])
 
     ax.plot(x, y, c="C0", linestyle=linestyle)
 
