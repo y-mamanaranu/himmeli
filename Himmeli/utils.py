@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def radius(theta, offset=0, z=0):
@@ -25,62 +26,121 @@ def plot_surface_3d(ax, x0, y0, z0, x1, y1, z1, x2, y2, z2, x3, y3, z3):
     ax.plot_surface(x, y, z, alpha=0.2, color="C0")
 
 
-def plot_side(ax, x0, y0, x1, y1, xoff=None,
-              yoff=None, c=1, linestyle=None):
-    if hasattr(c, "__iter__"):
-        cx, cy = c
+def max_or_min(arr: np.array,
+               coeff: float) -> float:
+    """端の点を求める.
+
+    Parameters
+    ----------
+    arr : np.array
+        [description]
+    coeff : float
+        [description]
+
+    Returns
+    -------
+    float
+        [description]
+    """
+    if coeff > 0:
+        return np.max(arr)
     else:
-        cx = cy = c
-
-    x = np.array([cx * x0 + xoff, cx * x1 + xoff])
-    y = np.array([cy * y0 + yoff, cy * y1 + yoff])
-
-    ax.plot(x, y, c="C0", linestyle=linestyle)
+        return np.min(arr)
 
 
-def plot_shape(ax, *xy, linestyle=None):
-    x, y = zip(*xy)
-    ax.plot(x, y, c="C0", linestyle=linestyle)
+def get_carr(p0: np.array,
+             p1: np.array,
+             p2: np.array) -> np.array:
+    """外接円を求める.
+
+    Parameters
+    ----------
+    p0 : np.array
+        1点目
+    p1 : np.array
+        2点目
+    p2 : np.array
+        3点目
+
+    Returns
+    -------
+    np.array
+        外接円
+    """
+    e_x = p0 - p1
+    e_x /= np.linalg.norm(e_x)
+
+    e_y = p2 - p1
+    e_y -= np.dot(e_x, e_y) * e_x
+    e_y /= np.linalg.norm(e_y)
+
+    parr = np.array([p0, p2])
+    earr = np.array([e_x, e_y])
+    M = np.array(np.dot(parr - p1, earr.T))
+    C = np.dot(np.linalg.inv(M), np.linalg.norm(parr - p1, axis=1)**2 / 2)
+
+    Ooff = p1 + np.dot(C, earr)
+    r = np.linalg.norm(Ooff - p1)
+    s = np.linspace(0, 2 * np.pi, 100, endpoint=True)
+    return Ooff + np.vstack([r * np.cos(s), r * np.sin(s), np.zeros(100)]).T
 
 
-def plot_isosceles(ax, x0, y0, w, h, transpose=False):
-    x1 = x0 + w
-    x2 = x0 + w / 2
-    y1 = y0
-    y2 = y0 + h
-    if transpose:
-        x1 = x0
-        x2 = x0 - h
-        y1 = y0 + w
-        y2 = y0 + w / 2
+def map_to_2d(parr: np.array,
+              p0: np.array,
+              p1: np.array,
+              p2: np.array,
+              off: list,
+              coeff: list):
+    e_x = p1 - p0
+    e_x /= np.linalg.norm(e_x)
+    e_x *= coeff[0]
 
-    ax.plot([x0, x1, x2], [y0, y1, y2], c="C0")
-    ax.plot([x2, x0], [y2, y0], c="C0", linestyle=":")
+    e_y = p2 - p0
+    e_y -= np.dot(e_x, e_y) * e_x
+    e_y /= np.linalg.norm(e_y)
+    e_y *= coeff[1]
 
+    xarr = off[0] + np.dot(parr - p0, e_x)
+    yarr = off[1] + np.dot(parr - p0, e_y)
 
-def plot_trapezoid(ax, x0, y0, w1, w2, h):
-    x1 = x0 + w1
-    x2 = x0 + (w1 + w2) / 2
-    x3 = x0 + (w1 - w2) / 2
-    y1 = y0
-    y2 = y0 + h
-    y3 = y0 + h
-
-    ax.plot([x0, x1, x2, x3], [y0, y1, y2, y3], c="C0")
-    ax.plot([x3, x0], [y3, y0], c="C0", linestyle=":")
+    return xarr, yarr
 
 
-def plot_circle(ax, x0, y0, r, theta0=0):
-    theta = np.linspace(0, 2 * np.pi, 100, endpoint=True)
-    x = x0 + r * (np.cos(theta + theta0) - np.cos(theta0))
-    y = y0 + r * (np.sin(theta + theta0) - np.sin(theta0))
+def plot_2d(ax: plt.Axes,
+            parr: np.array,
+            p0: np.array,
+            p1: np.array,
+            p2: np.array,
+            off: list,
+            coeff: list,
+            ls: str = None) -> list:
+    """2次元にプロットする.
 
-    ax.plot(x, y, c="C0", linestyle=":")
+    Parameters
+    ----------
+    ax : plt.Axes
+        [description]
+    parr : np.array
+        [description]
+    p0 : np.array
+        [description]
+    p1 : np.array
+        [description]
+    p2 : np.array
+        [description]
+    off : list
+        [description]
+    coeff : list
+        [description]
+    ls : str, optional
+        [description], by default None
 
+    Returns
+    -------
+    list
+        [description]
+    """
+    xarr, yarr = map_to_2d(parr, p0, p1, p2, off, coeff)
+    ax.plot(xarr, yarr, c="C0", ls=ls)
 
-def plot_polygon(ax, x0, y0, r, n, theta0=0):
-    theta = np.linspace(0, 2 * np.pi, n + 1, endpoint=True)
-    x = x0 + r * (np.cos(theta + theta0) - np.cos(theta0))
-    y = y0 + r * (np.sin(theta + theta0) - np.sin(theta0))
-
-    ax.plot(x, y, c="C0", linestyle=":")
+    return [max_or_min(xarr, coeff[0]), max_or_min(yarr, coeff[1])]

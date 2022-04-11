@@ -1,76 +1,110 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from pathlib import Path
 
 from ..himmeli import Himmeli
 from ..utils import (
-    plot_circle,
-    plot_isosceles,
-    plot_polygon,
     plot_side_3d,
     plot_surface_3d,
-    plot_trapezoid,
-    plot_shape,
+    plot_2d,
+    get_carr,
+    map_to_2d
 )
 
 
 class Bicone_Lack(Himmeli):
-    def __init__(self, a1, a2, b1, b2, n, folder=Path(".")):
-        super().__init__(folder=folder)
+    def __init__(self,
+                 r1: float,
+                 r2: float,
+                 h1: float,
+                 h2: float,
+                 n: int,
+                 folder: Path = Path(".")):
+        super().__init__(n=n, folder=folder)
+        self.r1 = r1
+        self.r2 = r2
+        self.h1 = h1
+        self.h2 = h2
 
-        self.a1 = a1
-        self.a2 = a2
-        self.b1 = b1
-        self.b2 = b2
+        self.layer = [np.array([0, 0, self.h1]),
+                      self.radius(self.r1),
+                      self.radius(self.r2, h=-self.h2)]
+
+    def __str__(self) -> str:
+        return f"Bicone_Lack: {self.a1:g}, {self.a2:g}, {self.b1:g}, {self.b2:g}, {self.n}"
+
+    @classmethod
+    def from_in_kind(cls,
+                     a1: float,
+                     a2: float,
+                     b1: float,
+                     b2: float,
+                     n: int,
+                     folder: Path = Path(".")):
         if b1 is None:
-            self.b1 = self.a1
+            b1 = a1
         if a2 is None and b2 is None:
             print(f"`a2` or `b2` must be not `None`")
             raise ValueError()
         if a2 is None:
-            self.a2 = self.a1 * (self.b1 - self.b2) / self.b1
+            a2 = a1 * (b1 - b2) / b1
         elif b2 is None:
-            self.b2 = self.b1 * (self.a1 - self.a2) / self.a1
+            b2 = b1 * (a1 - a2) / a1
 
-        if self.a1 <= self.a2:
+        if a1 <= a2:
             print(f"`a1` must large than `a2`")
-            print(f"`a1`={self.a1}")
-            print(f"`a2`={self.a2}")
+            print(f"`a1`={a1}")
+            print(f"`a2`={a2}")
             raise ValueError()
 
-        if self.b1 <= self.b2:
+        if b1 <= b2:
             print(f"`b1` must large than `b2`")
-            print(f"`b1`={self.b1}")
-            print(f"`b2`={self.b2}")
+            print(f"`b1`={b1}")
+            print(f"`b2`={b2}")
             raise ValueError()
 
-        self.n = n
-        self.dtheta = 2 * np.pi / self.n
-        self.r1 = self.b1 / (2 * np.sin(self.dtheta / 2))
-        self.r2 = self.b2 / (2 * np.sin(self.dtheta / 2))
+        dtheta = 2 * np.pi / n
+        r1 = b1 / (2 * np.sin(dtheta / 2))
+        r2 = b2 / (2 * np.sin(dtheta / 2))
 
-        if self.a1 <= self.r1:
-            print(f"`a1` must large than {self.r1}")
-            print(f"`a1`={self.a1}")
+        if a1 <= r1:
+            print(f"`a1` must large than {r1}")
+            print(f"`a1`={a1}")
             print(f"In other wards,")
-            b1_u = self.a1 * (2 * np.sin(self.dtheta / 2))
+            b1_u = a1 * (2 * np.sin(dtheta / 2))
             print(f"`b1` must small than {b1_u}")
-            print(f"`b1`={self.b1}")
+            print(f"`b1`={b1}")
             raise ValueError()
 
-        if self.a2 <= self.r1 - self.r2:
-            print(f"`a2` must large than {self.r1-self.r2}")
-            print(f"`a2`={self.a2}")
+        if a2 <= r1 - r2:
+            print(f"`a2` must large than {r1-r2}")
+            print(f"`a2`={a2}")
             print(f"In other wards,")
-            b2_u = (self.r1 - self.a2) * (2 * np.sin(self.dtheta / 2))
+            b2_u = (r1 - a2) * (2 * np.sin(dtheta / 2))
             print(f"`b2` must large than {b2_u}")
-            print(f"`b2`={self.b2}")
+            print(f"`b2`={b2}")
             raise ValueError()
 
-        self.h1 = np.sqrt(self.a1**2 - self.r1**2)
-        self.h2 = np.sqrt(self.a2**2 - (self.r1 - self.r2)**2)
+        h1 = np.sqrt(a1**2 - r1**2)
+        h2 = np.sqrt(a2**2 - (r1 - r2)**2)
 
-    def __str__(self) -> str:
-        return f"Bicone_Lack: {self.a1:g}, {self.a2:g}, {self.b1:g}, {self.b2:g}, {self.n}"
+        return cls(r1, r2, h1, h2, n, folder=folder)
+
+    @property
+    def a1(self):
+        return np.sqrt(self.h1**2 + self.r1**2)
+
+    @property
+    def a2(self):
+        return np.sqrt(self.h2**2 + (self.r1 - self.r2)**2)
+
+    @property
+    def b1(self):
+        return 2 * self.r1 * np.sin(self.dtheta / 2)
+
+    @property
+    def b2(self):
+        return 2 * self.r2 * np.sin(self.dtheta / 2)
 
     @property
     def name(self):
@@ -117,32 +151,68 @@ class Bicone_Lack(Himmeli):
             x3 = self.r2 * np.cos(theta0), self.r2 * np.sin(theta0), -self.h2
             plot_surface_3d(ax, *x0, *x1, *x2, *x3)
 
-    def plot_expansion(self, ax):
-        w = self.b1
-        h = np.sqrt(self.a1**2 - (self.b1 / 2)**2)
+    def plot_expansion(self, ax: plt.Axes):
+        off = [0, 0]
+        coeff = [1, 1]
         for i in range(self.n):
-            x0 = self.b1 * i
-            plot_isosceles(ax, x0, 0, w, h)
+            off[1] = 0
+            p0 = self.layer[1][i]
+            p1 = self.layer[1][(i + 1) % self.n]
+            p2 = self.layer[0]
+            parr = np.array([p0, p1, p2, p0])
 
-        plot_circle(ax, 0, 0, self.r1, np.pi / 2 + self.dtheta / 2)
-        plot_polygon(ax, 0, 0, self.r1, self.n, np.pi / 2 + self.dtheta / 2)
+            off = plot_2d(ax, parr, p0, p1, p2, off, coeff)
 
-        w1 = self.b1
-        w2 = self.b2
-        h = -np.sqrt(self.a2**2 - ((self.b1 - self.b2) / 2)**2)
+        off = [0, 0]
+        coeff = [1, -1]
         for i in range(self.n):
-            x0 = self.b1 * (i + 1)
-            plot_trapezoid(ax, x0, 0, -w1, -w2, h)
+            off[1] = 0
+            p0 = self.layer[1][i]
+            p1 = self.layer[1][(i + 1) % self.n]
+            p2 = self.layer[2][(i + 1) % self.n]
+            p3 = self.layer[2][i]
+            parr = np.array([p0, p1, p2, p3, p0])
 
-        x0 = (w1 - w2) / 2
-        plot_circle(ax, x0, h, self.r2, np.pi / 2 + self.dtheta / 2)
-        plot_polygon(ax, x0, h, self.r2, self.n, np.pi / 2 + self.dtheta / 2)
+            if i == 0:
+                xarr, yarr = map_to_2d(parr, p0, p1, p2, off, coeff)
+                off_ = [xarr[3], yarr[3]]
+            off = plot_2d(ax, parr, p0, p1, p2, off, coeff)
 
-        xy0 = w + self.r1, self.h1
-        xy1 = w, 0
-        xy2 = w + self.r1 - self.r2, -self.h2
-        xy3 = w + self.r1, -self.h2
-        plot_shape(ax, xy0, xy1, xy2, xy3, linestyle=":")
+        off = [0, 0]
+        coeff = [1, -1]
+        if True:
+            p0 = self.layer[1][0]
+            p1 = self.layer[1][1]
+            p2 = self.layer[1][2]
+            parr = np.vstack([self.layer[1], p0])
+            carr = get_carr(p0, p1, p2)
+
+            plot_2d(ax, parr, p0, p1, p2, off, coeff, ls=":")
+            plot_2d(ax, carr, p0, p1, p2, off, coeff, ls=":")
+
+        off = off_
+        coeff = [1, -1]
+        if True:
+            p0 = self.layer[2][0]
+            p1 = self.layer[2][1]
+            p2 = self.layer[2][2]
+            parr = np.vstack([self.layer[2], p0])
+            carr = get_carr(p0, p1, p2)
+
+            plot_2d(ax, parr, p0, p1, p2, off, coeff)
+            plot_2d(ax, carr, p0, p1, p2, off, coeff, ls=":")
+
+        off = [self.b1, 0]
+        coeff = [1, 1]
+        if True:
+            p0 = self.layer[0]
+            p1 = self.layer[1][0]
+            p2 = self.layer[2][0]
+            p3 = np.array([0, 0, -self.h2])
+            parr = np.array([p0, p1, p2, p3])
+
+            off = plot_2d(ax, parr, p1, self.C, p0, off, coeff, ls=":")
+            off[1] = 0
 
         ax.set_aspect("equal")
 

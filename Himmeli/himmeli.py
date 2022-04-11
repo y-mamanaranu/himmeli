@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import numpy as np
 
+a1_landscape = [841, 594] * u.mm
+a1_portrait = [594, 841] * u.mm
+
 a2_landscape = [594, 420] * u.mm
 a2_portrait = [420, 594] * u.mm
 
@@ -23,12 +26,33 @@ class Himmeli(object):
         self.folder = folder
 
     @property
+    def C(self):
+        return np.array([0, 0, 0])
+
+    @property
     def dtheta(self):
         return 2 * np.pi / self.n
 
     @property
     def theta(self):
         return np.linspace(0, 2 * np.pi, self.n, endpoint=False)
+
+    @property
+    def cos(self):
+        return np.cos(self.theta)
+
+    @property
+    def sin(self):
+        return np.sin(self.theta)
+
+    @property
+    def zeros(self):
+        return np.zeros(self.n)
+
+    def radius(self, r: float, h: float = 0, offset: float = 0, ):
+        return np.array([r * np.cos(self.theta + offset),
+                         r * np.sin(self.theta + offset),
+                         self.zeros + h]).T
 
     @property
     def circle(self):
